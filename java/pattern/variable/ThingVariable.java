@@ -56,6 +56,9 @@ public abstract class ThingVariable<T extends ThingVariable<T>> extends Variable
     public abstract T getThis();
 
     @Override
+    public abstract T withoutProperties();
+
+    @Override
     public Set<ThingProperty> properties() {
         return Stream.concat(
                 singularProperties.values().stream(),
