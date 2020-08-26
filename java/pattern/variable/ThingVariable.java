@@ -134,15 +134,25 @@ public abstract class ThingVariable<T extends ThingVariable<T>> extends BoundVar
         return merged;
     }
 
+    public T asSameThingWith(List<ThingProperty> properties) {
+        for (ThingProperty thingProperty : properties) {
+            if (thingProperty.isSingular()) addSingularProperties(thingProperty.asSingular());
+            else if (thingProperty.isRepeatable()) addRepeatableProperty(thingProperty.asRepeatable());
+            else throw new RuntimeException("Unhandled ThingProperty is not Singular or Repeatable: " + thingProperty);
+        }
+        return getThis();
+    }
+
     public T asSameThingWith(ThingProperty.Singular property) {
         addSingularProperties(property);
         return getThis();
     }
 
     public T asSameThingWith(ThingProperty.Repeatable property) {
-        repeating.computeIfAbsent(property.getClass(), c -> new ArrayList<>()).add(property);
+        addRepeatableProperty(property);
         return getThis();
     }
+
 
     String isaSyntax() {
         if (isa().isPresent()) return isa().get().toString();
@@ -151,6 +161,10 @@ public abstract class ThingVariable<T extends ThingVariable<T>> extends BoundVar
 
     String hasSyntax() {
         return has().stream().map(ThingProperty.Has::toString).collect(joining(COMMA_SPACE.toString()));
+    }
+
+    void addRepeatableProperty(ThingProperty.Repeatable property) {
+        repeating.computeIfAbsent(property.getClass(), c -> new ArrayList<>()).add(property);
     }
 
     @Override

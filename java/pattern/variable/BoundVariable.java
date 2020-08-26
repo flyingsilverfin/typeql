@@ -40,6 +40,10 @@ public abstract class BoundVariable<T extends BoundVariable<T>> extends Variable
 
     abstract T merge(T variable);
 
+    public UnboundVariable asUnbound() {
+        return UnboundVariable.of(identity);
+    }
+
     T setAnonymousWithID(int id) {
         this.identity = Identity.anonymous(identity.isVisible, id);
         return getThis();
