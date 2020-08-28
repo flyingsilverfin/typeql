@@ -108,6 +108,35 @@ public abstract class ThingVariable<T extends ThingVariable<T>> extends BoundVar
                 .stream().map(ThingProperty::asHas).collect(toList());
     }
 
+    public T asSameThingWith(List<ThingProperty> properties) {
+        properties.forEach(property -> {
+            if (property.isSingular()) addSingularProperties(property.asSingular());
+            else if (property.isRepeatable()) addRepeatableProperty(property.asRepeatable());
+            else throw new RuntimeException("Unrecognised thing property" + property.toString());
+        });
+        return getThis();
+    }
+
+    public T asSameThingWith(ThingProperty.Singular property) {
+        addSingularProperties(property);
+        return getThis();
+    }
+
+    public T asSameThingWith(ThingProperty.Repeatable property) {
+        addRepeatableProperty(property);
+        return getThis();
+    }
+
+    @Override
+    ThingVariable.Merged merge(ThingVariable<?> variable) {
+        ThingVariable.Merged merged = new ThingVariable.Merged(reference, singular, repeating);
+        variable.singular.values().forEach(merged::addSingularProperties);
+        variable.repeating.forEach(
+                (clazz, list) -> merged.repeating.computeIfAbsent(clazz, c -> new ArrayList<>()).addAll(list)
+        );
+        return merged;
+    }
+
     void addSingularProperties(ThingProperty.Singular property) {
         if (singular.containsKey(property.getClass()) && !singular.get(property.getClass()).equals(property)) {
             throw GraqlException.create(ILLEGAL_PROPERTY_REPETITION.message(reference, singular.get(property.getClass()), property));
@@ -122,24 +151,8 @@ public abstract class ThingVariable<T extends ThingVariable<T>> extends BoundVar
         }
     }
 
-    @Override
-    ThingVariable.Merged merge(ThingVariable<?> variable) {
-        ThingVariable.Merged merged = new ThingVariable.Merged(reference, singular, repeating);
-        variable.singular.values().forEach(merged::addSingularProperties);
-        variable.repeating.forEach(
-                (clazz, list) -> merged.repeating.computeIfAbsent(clazz, c -> new ArrayList<>()).addAll(list)
-        );
-        return merged;
-    }
-
-    public T asSameThingWith(ThingProperty.Singular property) {
-        addSingularProperties(property);
-        return getThis();
-    }
-
-    public T asSameThingWith(ThingProperty.Repeatable property) {
+    private void addRepeatableProperty(ThingProperty.Repeatable property) {
         repeating.computeIfAbsent(property.getClass(), c -> new ArrayList<>()).add(property);
-        return getThis();
     }
 
     String isaSyntax() {

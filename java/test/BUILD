@@ -17,3 +17,13 @@
 
 load("@graknlabs_dependencies//tool/checkstyle:rules.bzl", "checkstyle_test")
 package(default_visibility = ["//visibility:public"])
+
+java_test(
+    name = "graph-test",
+    srcs = ["GraphTest.java"],
+    test_class = "graql.lang.test.GraphTest",
+    deps = [
+        "//java:graql",
+        "//java/pattern:pattern",
+    ],
+)
