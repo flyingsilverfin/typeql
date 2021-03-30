@@ -172,7 +172,7 @@ public abstract class Reference {
             this.hash = Objects.hash(this.type, this.isVisible, this.label);
         }
 
-        String label() {
+        public String label() {
             return label;
         }
 
