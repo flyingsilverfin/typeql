@@ -24,6 +24,7 @@ use chrono::{NaiveDate, NaiveDateTime, NaiveTime};
 
 use crate::{
     and,
+    builder::var_concept,
     common::{
         token::{
             Order::{Asc, Desc},
@@ -35,13 +36,11 @@ use crate::{
     parse_variable,
     pattern::{
         Annotation::Key, ConceptVariableBuilder, Conjunction, Disjunction, Label, RelationVariableBuilder,
-        ThingVariableBuilder, TypeVariableBuilder, Variable,
+        ThingVariableBuilder, TypeVariableBuilder, UnboundConceptVariable, UnboundVariable, Variable,
     },
     query::{AggregateQueryBuilder, TypeQLDefine, TypeQLInsert, TypeQLMatch, TypeQLUndefine},
     rel, rule, type_, typeql_insert, typeql_match, var, Query,
 };
-use crate::builder::var_concept;
-use crate::pattern::{UnboundConceptVariable, UnboundVariable};
 
 macro_rules! assert_valid_eq_repr {
     ($expected:ident, $parsed:ident, $query:ident) => {
@@ -1469,7 +1468,7 @@ fn test_expressions() {
         ?a, ?b;"#
     );
 
-    let parsed = parse_query(&query).unwrap();//.into_match();
+    let parsed = parse_query(&query).unwrap(); //.into_match();
     assert_eq!(parsed, reparse_query(&parsed), "{}", &parsed.to_string());
     // let expected = typeql_match!(var_concept("x").iid(iid));
     // assert_valid_eq_repr!(expected, parsed, query);
