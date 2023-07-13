@@ -168,7 +168,6 @@ macro_rules! error_messages {
 
 #[cfg(test)]
 mod tests {
-    use std::fmt::Debug;
     error_messages! { TestError
         code: "TST", type: "Test Error",
         BasicError() =
