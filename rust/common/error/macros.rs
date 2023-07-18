@@ -166,6 +166,7 @@ macro_rules! error_messages {
     };
 }
 
+#[allow(dead_code)]
 #[cfg(test)]
 mod tests {
     error_messages! { TestError
