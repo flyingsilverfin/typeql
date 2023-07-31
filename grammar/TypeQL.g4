@@ -161,17 +161,20 @@ attributes            :   attribute ( ',' attribute )* ;
 attribute             :   HAS label ( VAR_CONCEPT_ | VAR_VALUE_ | predicate )   // ownership by labeled variable or value
                       |   HAS VAR_CONCEPT_ ;                                    // or just value
 
+// VALUE CONSTRUCT
+
+value                 :   literal | VAR_CONCEPT_  | VAR_VALUE_ ;
+
 // PREDICATE CONSTRUCTS ========================================================
 
-predicate             :   value
-                      |   predicate_equality   predicate_value
+predicate             :   literal
+                      |   predicate_equality   value
                       |   predicate_substring  STRING_
                       ;
 predicate_equality    :   EQ | NEQ | GT | GTE | LT | LTE
                       |   ASSIGN ;                                              // Backwards compatibility till 3.0
 predicate_substring   :   CONTAINS | LIKE ;
 
-predicate_value       :   value | VAR_CONCEPT_  | VAR_VALUE_ ;
 
 // EXPRESSION CONSTRUCTS =======================================================
 
@@ -180,13 +183,11 @@ expression                  :   <assoc=right> expression POWER expression       
                             |   expression  (ADD | SUBTRACT) expression
                             |   expression_base
                             ;
-expression_base             :   VAR_CONCEPT_            | VAR_VALUE_
-                            |   expression_function     | value
-                            |   '(' expression ')'
-                            ;
+expression_base             :   value |   expression_function |   '(' expression ')'    ;
 expression_function         :   expression_function_name '('  expression_arguments? ')' ;
 expression_function_name    :   EXPR_FUNC_NAME | MAX | MIN                              ;
-expression_arguments        :   expression   (',' expression)*                          ;
+expression_arguments        :   expression   ( ',' expression )*                          ;
+
 
 // SCHEMA CONSTRUCT ============================================================
 
@@ -210,7 +211,7 @@ type_native           :   THING           |   ENTITY          |   ATTRIBUTE
 
 value_type            :   LONG            |   DOUBLE          |   STRING
                       |   BOOLEAN         |   DATETIME        ;
-value                 :   STRING_         |   BOOLEAN_
+literal               :   STRING_         |   BOOLEAN_
                       |   DATE_           |   DATETIME_
                       |   signed_long     |   signed_double   ;
 
