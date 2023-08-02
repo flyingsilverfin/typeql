@@ -180,8 +180,6 @@ public interface TypeQLQuery {
         Modifiers modifiers();
     }
 
-
-
     class MatchClause {
 
         private final Conjunction<? extends Pattern> conjunction;

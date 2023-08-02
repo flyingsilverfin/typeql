@@ -38,14 +38,15 @@ import static com.vaticle.typeql.lang.common.TypeQLToken.Char.NEW_LINE;
 import static com.vaticle.typeql.lang.common.TypeQLToken.Command.DELETE;
 import static com.vaticle.typeql.lang.common.TypeQLToken.Command.INSERT;
 import static com.vaticle.typeql.lang.common.exception.ErrorMessage.MISSING_PATTERNS;
+import static com.vaticle.typeql.lang.query.TypeQLQuery.appendClause;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.concat;
 
-public abstract class TypeQLWritable extends TypeQLQuery {
+public abstract class TypeQLWritable implements TypeQLQuery {
 
-    protected final TypeQLGet.Unmodified match;
+    protected final MatchClause match;
 
-    TypeQLWritable(@Nullable TypeQLGet.Unmodified match) {
+    TypeQLWritable(@Nullable MatchClause match) {
         this.match = match;
     }
 
@@ -59,14 +60,16 @@ public abstract class TypeQLWritable extends TypeQLQuery {
         private List<UnboundVariable> namedVariablesUnbound;
         private final TypeQLToken.Command command;
         protected final List<ThingVariable<?>> variables;
+        private final Modifiers modifiers;
         private final int hash;
 
-        InsertOrDelete(TypeQLToken.Command command, @Nullable TypeQLGet.Unmodified match, List<ThingVariable<?>> variables) {
+        InsertOrDelete(TypeQLToken.Command command, @Nullable MatchClause match, List<ThingVariable<?>> variables, Modifiers modifiers) {
             super(match);
             assert command == INSERT || command == DELETE;
             if (variables == null || variables.isEmpty()) throw TypeQLException.of(MISSING_PATTERNS.message());
             this.command = command;
             this.variables = variables;
+            this.modifiers = modifiers;
             this.hash = Objects.hash(this.command, this.match, this.variables);
         }
 
@@ -76,6 +79,10 @@ public abstract class TypeQLWritable extends TypeQLQuery {
                         .filter(Variable::isNamed).map(BoundVariable::toUnbound).distinct().collect(toList());
             }
             return namedVariablesUnbound;
+        }
+
+        public Modifiers modifiers() {
+            return modifiers;
         }
 
         @Override

@@ -34,7 +34,7 @@ import static java.util.Objects.requireNonNull;
 public class TypeQLDelete extends TypeQLWritable.InsertOrDelete {
 
     TypeQLDelete(TypeQLGet.Unmodified match, List<ThingVariable<?>> variables) {
-        super(DELETE, requireNonNull(match), validDeleteVars(match, variables));
+        super(DELETE, requireNonNull(match), validDeleteVars(match, variables), modifiers);
     }
 
     static List<ThingVariable<?>> validDeleteVars(TypeQLGet.Unmodified query, List<ThingVariable<?>> variables) {
