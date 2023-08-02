@@ -42,7 +42,7 @@ public class TypeQLInsert extends TypeQLWritable.InsertOrDelete {
         this(null, variables, null);
     }
 
-    TypeQLInsert(@Nullable TypeQLGet.Unfiltered match, List<ThingVariable<?>> variables, @Nullable Modifiers modifiers) {
+    TypeQLInsert(@Nullable TypeQLGet.Unmodified match, List<ThingVariable<?>> variables, @Nullable Modifiers modifiers) {
         super(INSERT, match, validInsertVars(match, variables), modifiers);
         Stream<Pattern> patterns = concat(
                 Stream.ofNullable(match).filter(Objects::nonNull).flatMap(TypeQLGet::patternsRecursive),
@@ -51,7 +51,7 @@ public class TypeQLInsert extends TypeQLWritable.InsertOrDelete {
         validateNamesUnique(patterns);
     }
 
-    static List<ThingVariable<?>> validInsertVars(@Nullable TypeQLGet.Unfiltered match, List<ThingVariable<?>> variables) {
+    static List<ThingVariable<?>> validInsertVars(@Nullable TypeQLGet.Unmodified match, List<ThingVariable<?>> variables) {
         if (match != null) {
             if (variables.stream().noneMatch(var -> var.isNamed() && match.namedVariablesUnbound().contains(var.toUnbound())
                     || var.variables().anyMatch(nestedVar -> match.namedVariablesUnbound().contains(nestedVar.toUnbound())))) {
@@ -61,7 +61,7 @@ public class TypeQLInsert extends TypeQLWritable.InsertOrDelete {
         return variables;
     }
 
-    public Optional<TypeQLGet.Unfiltered> match() {
+    public Optional<TypeQLGet.Unmodified> match() {
         return Optional.ofNullable(match);
     }
 

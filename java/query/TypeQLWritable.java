@@ -43,9 +43,9 @@ import static java.util.stream.Stream.concat;
 
 public abstract class TypeQLWritable extends TypeQLQuery {
 
-    protected final TypeQLGet.Unfiltered match;
+    protected final TypeQLGet.Unmodified match;
 
-    TypeQLWritable(@Nullable TypeQLGet.Unfiltered match) {
+    TypeQLWritable(@Nullable TypeQLGet.Unmodified match) {
         this.match = match;
     }
 
@@ -61,7 +61,7 @@ public abstract class TypeQLWritable extends TypeQLQuery {
         protected final List<ThingVariable<?>> variables;
         private final int hash;
 
-        InsertOrDelete(TypeQLToken.Command command, @Nullable TypeQLGet.Unfiltered match, List<ThingVariable<?>> variables) {
+        InsertOrDelete(TypeQLToken.Command command, @Nullable TypeQLGet.Unmodified match, List<ThingVariable<?>> variables) {
             super(match);
             assert command == INSERT || command == DELETE;
             if (variables == null || variables.isEmpty()) throw TypeQLException.of(MISSING_PATTERNS.message());
@@ -82,7 +82,7 @@ public abstract class TypeQLWritable extends TypeQLQuery {
         public String toString(boolean pretty) {
             StringBuilder query = new StringBuilder();
             if (match != null) query.append(match.toString(pretty)).append(NEW_LINE);
-            appendSubQuery(query, command, variables.stream().map(v -> v.toString(pretty)), pretty);
+            appendClause(query, command, variables.stream().map(v -> v.toString(pretty)), pretty);
             return query.toString();
         }
 
