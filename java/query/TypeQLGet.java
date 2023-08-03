@@ -49,7 +49,7 @@ import static com.vaticle.typeql.lang.common.exception.ErrorMessage.VARIABLE_OUT
 import static com.vaticle.typeql.lang.pattern.Pattern.validateNamesUnique;
 import static java.util.Collections.unmodifiableList;
 
-public abstract class TypeQLGet implements TypeQLQuery, Aggregatable<TypeQLGet.Aggregate> {
+public class TypeQLGet implements TypeQLQuery, Aggregatable<TypeQLGet.Aggregate> {
 
     final MatchClause match;
     final List<UnboundVariable> filter;
@@ -57,7 +57,7 @@ public abstract class TypeQLGet implements TypeQLQuery, Aggregatable<TypeQLGet.A
 
     private final int hash;
 
-    TypeQLGet(MatchClause match, List<UnboundVariable> filter, Modifiers modifiers) {
+    public TypeQLGet(MatchClause match, List<UnboundVariable> filter, Modifiers modifiers) {
         if (filter == null) throw TypeQLException.of(ErrorMessage.MISSING_MATCH_FILTER.message());
         this.match = match;
         if (filter.isEmpty()) this.filter = list(match.namedVariablesUnbound());
@@ -109,6 +109,11 @@ public abstract class TypeQLGet implements TypeQLQuery, Aggregatable<TypeQLGet.A
     }
 
     @Override
+    public String toString() {
+        return toString(true);
+    }
+
+    @Override
     public String toString(boolean pretty) {
         StringBuilder query = new StringBuilder(match.toString(pretty));
         if (!filter.isEmpty()) {
@@ -142,7 +147,7 @@ public abstract class TypeQLGet implements TypeQLQuery, Aggregatable<TypeQLGet.A
         return hash;
     }
 
-    public static class Unmodified extends TypeQLGet implements TypeQLQuery.Unmodified {
+    public static class Unmodified extends TypeQLGet implements TypeQLQuery.Unmodified<Sorted, Offset, Limited> {
 
         public Unmodified(MatchClause match, List<UnboundVariable> filter) {
             super(match, filter, Modifiers.EMPTY);
@@ -154,7 +159,7 @@ public abstract class TypeQLGet implements TypeQLQuery, Aggregatable<TypeQLGet.A
         }
 
         @Override
-        public Offset offset(long offset) {
+        public TypeQLGet.Offset offset(long offset) {
             return new TypeQLGet.Offset(this, offset);
         }
 
@@ -165,7 +170,7 @@ public abstract class TypeQLGet implements TypeQLQuery, Aggregatable<TypeQLGet.A
 
     }
 
-    public static class Sorted extends TypeQLGet implements TypeQLQuery.Sorted {
+    public static class Sorted extends TypeQLGet implements TypeQLQuery.Sorted<Offset, Limited> {
 
         public Sorted(TypeQLGet get, Sortable.Sorting sorting) {
             super(get.match, get.filter, new Modifiers(sorting, get.modifiers.offset, get.modifiers.limit));
@@ -178,7 +183,7 @@ public abstract class TypeQLGet implements TypeQLQuery, Aggregatable<TypeQLGet.A
 
         @Override
         public TypeQLGet.Offset offset(long offset) {
-            return new Offset(this, offset);
+            return new TypeQLGet.Offset(this, offset);
         }
 
         @Override
@@ -187,7 +192,7 @@ public abstract class TypeQLGet implements TypeQLQuery, Aggregatable<TypeQLGet.A
         }
     }
 
-    public static class Offset extends TypeQLGet implements TypeQLQuery.Offsetted {
+    public static class Offset extends TypeQLGet implements TypeQLQuery.Offset<Limited> {
 
         public Offset(TypeQLGet get, long offset) {
             super(get.match, get.filter, new Modifiers(get.modifiers.sorting, offset, get.modifiers.limit));

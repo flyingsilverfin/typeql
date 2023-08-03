@@ -34,7 +34,8 @@ eof_schema_rule       :   schema_rule      EOF ;
 query                 :   query_define           |   query_undefine
                       |   query_insert           |   query_update
                       |   query_delete           |   query_get
-                      |   query_get_aggregate    |   query_fetch          ;
+                      |   query_get_aggregate    |   query_get_group
+                      |   query_get_group_agg    |   query_fetch          ;
 
 
 query_define          :   clause_define   ;
@@ -57,7 +58,7 @@ clause_undefine       :   UNDEFINE    definables        ;
 clause_match          :   MATCH       patterns          ;
 clause_insert         :   INSERT      variable_things   ;
 clause_delete         :   DELETE      variable_things   ;
-clause_get            :   GET       ( VAR_CONCEPT_ | VAR_VALUE_ )   ( ',' ( VAR_CONCEPT_ | VAR_VALUE_ ) )*  ';' ;
+clause_get            :   GET       ( VAR_CONCEPT_ | VAR_VALUE_ )?   ( ',' ( VAR_CONCEPT_ | VAR_VALUE_ ) )*  ';' ;
 clause_group          :   GROUP     ( VAR_CONCEPT_ | VAR_VALUE_ ) ';'            ;
 clause_fetch          :   FETCH       fetchables        ;
 clause_aggregate      :   aggregate_method  ( VAR_CONCEPT_  | VAR_VALUE_ )?  ';' ;  // method and, optionally, a variable

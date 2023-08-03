@@ -100,7 +100,7 @@ public class ErrorMessage extends com.vaticle.typedb.common.exception.ErrorMessa
     public static final ErrorMessage INVALID_COUNT_VARIABLE_ARGUMENT =
             new ErrorMessage(39, "Aggregate COUNT does not accept a Variable.");
     public static final ErrorMessage ILLEGAL_GRAMMAR =
-            new ErrorMessage(40, "Illegal grammar!");
+            new ErrorMessage(40, "Illegal grammar: '%s'");
     public static final ErrorMessage ILLEGAL_CHAR_IN_LABEL =
             new ErrorMessage(41, "'%s' is not a valid Type label. Type labels must start with a letter, and may contain only letters, numbers, '-' and '_'.");
     public static final ErrorMessage INVALID_ANNOTATION =
