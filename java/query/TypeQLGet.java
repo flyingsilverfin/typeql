@@ -45,7 +45,7 @@ import static com.vaticle.typeql.lang.common.TypeQLToken.Filter.GET;
 import static com.vaticle.typeql.lang.common.exception.ErrorMessage.FILTER_VARIABLE_ANONYMOUS;
 import static com.vaticle.typeql.lang.common.exception.ErrorMessage.ILLEGAL_FILTER_VARIABLE_REPEATING;
 import static com.vaticle.typeql.lang.common.exception.ErrorMessage.INVALID_COUNT_VARIABLE_ARGUMENT;
-import static com.vaticle.typeql.lang.common.exception.ErrorMessage.VARIABLE_OUT_OF_SCOPE_MATCH;
+import static com.vaticle.typeql.lang.common.exception.ErrorMessage.VARIABLE_OUT_OF_SCOPE;
 import static com.vaticle.typeql.lang.pattern.Pattern.validateNamesUnique;
 import static java.util.Collections.unmodifiableList;
 
@@ -58,7 +58,7 @@ public class TypeQLGet implements TypeQLQuery, Aggregatable<TypeQLGet.Aggregate>
     private final int hash;
 
     public TypeQLGet(MatchClause match, List<UnboundVariable> filter, Modifiers modifiers) {
-        if (filter == null) throw TypeQLException.of(ErrorMessage.MISSING_MATCH_FILTER.message());
+        if (filter == null) throw TypeQLException.of(ErrorMessage.MISSING_GET_FILTER.message());
         this.match = match;
         if (filter.isEmpty()) this.filter = list(match.namedVariablesUnbound());
         else {
@@ -75,7 +75,7 @@ public class TypeQLGet implements TypeQLQuery, Aggregatable<TypeQLGet.Aggregate>
     private void sortVarsAreInScope() {
         Collection<UnboundVariable> sortableVars = filter.isEmpty() ? match.namedVariablesUnbound() : filter;
         if (modifiers.sorting != null && modifiers.sorting.variables().stream().anyMatch(v -> !sortableVars.contains(v))) {
-            throw TypeQLException.of(VARIABLE_OUT_OF_SCOPE_MATCH.message(modifiers.sorting.variables()));
+            throw TypeQLException.of(VARIABLE_OUT_OF_SCOPE.message(modifiers.sorting.variables()));
         }
     }
 
@@ -84,10 +84,14 @@ public class TypeQLGet implements TypeQLQuery, Aggregatable<TypeQLGet.Aggregate>
         for (UnboundVariable var : filter) {
             if (!var.isNamed()) throw TypeQLException.of(FILTER_VARIABLE_ANONYMOUS);
             if (!match.namedVariablesUnbound().contains(var))
-                throw TypeQLException.of(VARIABLE_OUT_OF_SCOPE_MATCH.message(var));
+                throw TypeQLException.of(VARIABLE_OUT_OF_SCOPE.message(var));
             if (duplicates.contains(var)) throw TypeQLException.of(ILLEGAL_FILTER_VARIABLE_REPEATING.message(var));
             else duplicates.add(var);
         }
+    }
+
+    public MatchClause match() {
+        return match;
     }
 
     public List<UnboundVariable> filter() {
@@ -237,7 +241,7 @@ public class TypeQLGet implements TypeQLQuery, Aggregatable<TypeQLGet.Aggregate>
             } else if (var != null && method.equals(TypeQLToken.Aggregate.Method.COUNT)) {
                 throw TypeQLException.of(INVALID_COUNT_VARIABLE_ARGUMENT.message());
             } else if (var != null && !query.filter().contains(var)) {
-                throw TypeQLException.of(VARIABLE_OUT_OF_SCOPE_MATCH.message(var.toString()));
+                throw TypeQLException.of(VARIABLE_OUT_OF_SCOPE.message(var.toString()));
             }
 
             this.query = query;
@@ -299,7 +303,7 @@ public class TypeQLGet implements TypeQLQuery, Aggregatable<TypeQLGet.Aggregate>
             if (query == null) throw new NullPointerException("GetQuery is null");
             if (var == null) throw new NullPointerException("Variable is null");
             else if (!query.filter().contains(var)) {
-                throw TypeQLException.of(VARIABLE_OUT_OF_SCOPE_MATCH.message(var.toString()));
+                throw TypeQLException.of(VARIABLE_OUT_OF_SCOPE.message(var.toString()));
             }
 
             this.query = query;
@@ -353,14 +357,14 @@ public class TypeQLGet implements TypeQLQuery, Aggregatable<TypeQLGet.Aggregate>
             private final int hash;
 
             public Aggregate(TypeQLGet.Group group, TypeQLToken.Aggregate.Method method, UnboundVariable var) {
-                if (group == null) throw new NullPointerException("TypeQLMatch.Group is null");
+                if (group == null) throw new NullPointerException("TypeQLGet.Group is null");
                 if (method == null) throw new NullPointerException("Method is null");
                 if (var == null && !method.equals(TypeQLToken.Aggregate.Method.COUNT)) {
                     throw new NullPointerException("Variable is null");
                 } else if (var != null && method.equals(TypeQLToken.Aggregate.Method.COUNT)) {
                     throw new IllegalArgumentException(INVALID_COUNT_VARIABLE_ARGUMENT.message());
                 } else if (var != null && !group.query.filter().contains(var)) {
-                    throw TypeQLException.of(VARIABLE_OUT_OF_SCOPE_MATCH.message(var.toString()));
+                    throw TypeQLException.of(VARIABLE_OUT_OF_SCOPE.message(var.toString()));
                 }
 
                 this.group = group;

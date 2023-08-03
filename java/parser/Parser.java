@@ -51,8 +51,8 @@ import com.vaticle.typeql.lang.pattern.variable.builder.Expression;
 import com.vaticle.typeql.lang.pattern.variable.builder.Expression.Operation;
 import com.vaticle.typeql.lang.query.TypeQLDefine;
 import com.vaticle.typeql.lang.query.TypeQLDelete;
-import com.vaticle.typeql.lang.query.TypeQLInsert;
 import com.vaticle.typeql.lang.query.TypeQLGet;
+import com.vaticle.typeql.lang.query.TypeQLInsert;
 import com.vaticle.typeql.lang.query.TypeQLQuery;
 import com.vaticle.typeql.lang.query.TypeQLQuery.MatchClause;
 import com.vaticle.typeql.lang.query.TypeQLQuery.Modifiers;
@@ -321,13 +321,24 @@ public class Parser extends TypeQLBaseVisitor {
     }
 
     @Override
+    public List<ThingVariable<?>> visitClause_insert(TypeQLParser.Clause_insertContext ctx) {
+        return visitVariable_things(ctx.variable_things());
+    }
+
+    @Override
     public TypeQLDelete visitQuery_delete(TypeQLParser.Query_deleteContext ctx) {
         return visitClause_match(ctx.clause_match()).delete(visitClause_delete(ctx.clause_delete()));
     }
 
     @Override
     public TypeQLUpdate visitQuery_update(TypeQLParser.Query_updateContext ctx) {
-        return visitClause_match(ctx.clause_match()).delete(ctx.clause_delete()).insert(ctx.clause_insert());
+        return visitClause_match(ctx.clause_match()).delete(visitClause_delete(ctx.clause_delete()))
+                .insert(visitClause_insert(ctx.clause_insert()));
+    }
+
+    @Override
+    public List<ThingVariable<?>> visitClause_delete(TypeQLParser.Clause_deleteContext ctx) {
+        return visitVariable_things(ctx.variable_things());
     }
 
     @Override
@@ -377,51 +388,43 @@ public class Parser extends TypeQLBaseVisitor {
      */
     @Override
     public TypeQLGet.Aggregate visitQuery_get_aggregate(TypeQLParser.Query_get_aggregateContext ctx) {
-        TypeQLParser.Match_aggregateContext function = ctx.match_aggregate();
-        UnboundVariable aggregateOn;
-        if (function.VAR_CONCEPT_() != null) aggregateOn = getVarConcept(function.VAR_CONCEPT_());
-        else if (function.VAR_VALUE_() != null) aggregateOn = getVarValue(function.VAR_VALUE_());
-        else aggregateOn = null;
-        return visitQuery_match(ctx.query_match()).aggregate(
-                TypeQLToken.Aggregate.Method.of(function.aggregate_method().getText()),
-                aggregateOn
-        );
+        TypeQLGet get = visitQuery_get(ctx.query_get());
+        Pair<TypeQLToken.Aggregate.Method, UnboundVariable> agg = visitClause_aggregate(ctx.clause_aggregate());
+        return get.aggregate(agg.first(), agg.second());
+    }
+
+    @Override
+    public Pair<TypeQLToken.Aggregate.Method, UnboundVariable> visitClause_aggregate(TypeQLParser.Clause_aggregateContext ctx) {
+        UnboundVariable aggregateVariable;
+        if (ctx.VAR_CONCEPT_() != null) aggregateVariable = getVarConcept(ctx.VAR_CONCEPT_());
+        else if (ctx.VAR_VALUE_() != null) aggregateVariable = getVarValue(ctx.VAR_VALUE_());
+        else aggregateVariable = null;
+        return new Pair<>(TypeQLToken.Aggregate.Method.of(ctx.aggregate_method().getText()), aggregateVariable);
     }
 
     @Override
     public TypeQLGet.Group visitQuery_get_group(TypeQLParser.Query_get_groupContext ctx) {
-        UnboundVariable var;
-        if (ctx.match_group().VAR_CONCEPT_() != null) var = getVarConcept(ctx.match_group().VAR_CONCEPT_());
-        else if (ctx.match_group().VAR_VALUE_() != null) var = getVarValue(ctx.match_group().VAR_VALUE_());
-        else throw TypeQLException.of(ILLEGAL_STATE);
-        return visitQuery_match(ctx.query_match()).group(var);
+        TypeQLGet get = visitQuery_get(ctx.query_get());
+        return get.group(visitClause_group(ctx.clause_group()));
+    }
+
+    @Override
+    public UnboundVariable visitClause_group(TypeQLParser.Clause_groupContext ctx) {
+        if (ctx.VAR_CONCEPT_() != null) {
+            return getVarConcept(ctx.VAR_CONCEPT_());
+        } else if (ctx.VAR_VALUE_() != null) {
+            return getVarValue(ctx.VAR_VALUE_());
+        } else throw TypeQLException.of(ILLEGAL_GRAMMAR);
     }
 
     @Override
     public TypeQLGet.Group.Aggregate visitQuery_get_group_agg(TypeQLParser.Query_get_group_aggContext ctx) {
-        UnboundVariable groupVar;
-        if (ctx.match_group().VAR_CONCEPT_() != null) groupVar = getVarConcept(ctx.match_group().VAR_CONCEPT_());
-        else if (ctx.match_group().VAR_VALUE_() != null) groupVar = getVarValue(ctx.match_group().VAR_VALUE_());
-        else throw TypeQLException.of(ILLEGAL_STATE);
-
-        TypeQLParser.Match_aggregateContext function = ctx.match_aggregate();
-        UnboundVariable aggregateVar;
-        if (function.VAR_CONCEPT_() != null) aggregateVar = getVarConcept(function.VAR_CONCEPT_());
-        else if (function.VAR_VALUE_() != null) aggregateVar = getVarValue(function.VAR_VALUE_());
-        else aggregateVar = null;
-
-        return visitQuery_match(ctx.query_match()).group(groupVar).aggregate(
-                TypeQLToken.Aggregate.Method.of(function.aggregate_method().getText()),
-                aggregateVar
-        );
+        Pair<TypeQLToken.Aggregate.Method, UnboundVariable> agg = visitClause_aggregate(ctx.clause_aggregate());
+        return visitQuery_get_group(ctx.query_get_group()).aggregate(agg.first(), agg.second());
     }
 
-    // GET QUERY MODIFIERS ==========================================
 
-    @Override
-    public List<UnboundVariable> visitFilter(TypeQLParser.FilterContext ctx) {
-
-    }
+    // QUERY MODIFIERS ==========================================
 
     @Override
     public Sortable.Sorting visitSort(TypeQLParser.SortContext ctx) {
@@ -551,7 +554,7 @@ public class Parser extends TypeQLBaseVisitor {
             } else if (constraint.VALUE() != null) {
                 type = type.value(TypeQLArg.ValueType.of(constraint.value_type().getText()));
             } else if (constraint.REGEX() != null) {
-                type = type.regex(getRegex(constraint.STRING_()));
+                type = type.regex(getRegex(constraint.QUOTED_STRING()));
             } else if (constraint.TYPE() != null) {
                 Pair<String, String> scopedLabel = visitLabel_any(constraint.label_any());
                 type = type.constrain(new TypeConstraint.Label(scopedLabel.first(), scopedLabel.second()));
@@ -862,8 +865,8 @@ public class Parser extends TypeQLBaseVisitor {
             else throw TypeQLException.of(ILLEGAL_STATE);
         } else if (ctx.predicate_substring() != null) {
             predicate = TypeQLToken.Predicate.SubString.of(ctx.predicate_substring().getText());
-            if (ctx.predicate_substring().LIKE() != null) value = getRegex(ctx.STRING_());
-            else value = getString(ctx.STRING_());
+            if (ctx.predicate_substring().LIKE() != null) value = getRegex(ctx.QUOTED_STRING());
+            else value = getString(ctx.QUOTED_STRING());
         } else throw TypeQLException.of(ILLEGAL_STATE);
 
         assert predicate != null;
@@ -910,8 +913,8 @@ public class Parser extends TypeQLBaseVisitor {
 
     @Override
     public Object visitValue(TypeQLParser.ValueContext ctx) {
-        if (ctx.STRING_() != null) {
-            return getString(ctx.STRING_());
+        if (ctx.QUOTED_STRING() != null) {
+            return getString(ctx.QUOTED_STRING());
 
         } else if (ctx.signed_long() != null) {
             return visitSigned_long(ctx.signed_long());

@@ -103,7 +103,7 @@ public interface TypeQLQuery {
         }
     }
 
-    default TypeQLGet asMatch() {
+    default TypeQLGet asGet() {
         if (this instanceof TypeQLGet) {
             return (TypeQLGet) this;
         } else {
@@ -111,7 +111,7 @@ public interface TypeQLQuery {
         }
     }
 
-    default TypeQLGet.Aggregate asMatchAggregate() {
+    default TypeQLGet.Aggregate asGetAggregate() {
         if (this instanceof TypeQLGet.Aggregate) {
             return (TypeQLGet.Aggregate) this;
         } else {
@@ -119,7 +119,7 @@ public interface TypeQLQuery {
         }
     }
 
-    default TypeQLGet.Group asMatchGroup() {
+    default TypeQLGet.Group asGetGroup() {
         if (this instanceof TypeQLGet.Group) {
             return (TypeQLGet.Group) this;
         } else {
@@ -127,7 +127,7 @@ public interface TypeQLQuery {
         }
     }
 
-    default TypeQLGet.Group.Aggregate asMatchGroupAggregate() {
+    default TypeQLGet.Group.Aggregate asGetGroupAggregate() {
         if (this instanceof TypeQLGet.Group.Aggregate) {
             return (TypeQLGet.Group.Aggregate) this;
         } else {

@@ -47,10 +47,10 @@ pip install typeql-grammar=={version}
   
   Or through the java api:
   ```java
-  TypeQLMatch query = match(
+  TypeQLGet query = match(
           cVar("x").isa("triangle").has("base", cVar("b")).has("height", cVar("h")),
-          vVar("area").assign(Expression.constant(0.5).mul(cVar("b").mul(cVar("h"))))))
-  );
+          vVar("area").assign(Expression.constant(0.5).mul(cVar("b").mul(cVar("h"))))
+  ).get();
   ```
   
   Rules now also support value-variable conclusions:

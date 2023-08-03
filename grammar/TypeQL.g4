@@ -49,7 +49,7 @@ query_delete          :   clause_match  clause_delete  modifiers                
 query_get             :   clause_match  clause_get  modifiers                      ;
 query_get_aggregate   :   query_get  clause_aggregate                              ;
 query_get_group       :   query_get  clause_group                                  ;
-query_get_group_agg   :   query_get  clause_group clause_aggregate                 ;
+query_get_group_agg   :   query_get_group clause_aggregate                 ;
 
 query_fetch           :   clause_match  clause_fetch  modifiers                    ;
 
@@ -66,7 +66,7 @@ aggregate_method      :   COUNT   |   MAX     |   MEAN    |   MEDIAN            
                       |   MIN     |   STD     |   SUM     ;
 
 
-// MATCH QUERY MODIFIERS =======================================================
+// QUERY MODIFIERS =======================================================
 
 modifiers             : ( sort ';' )? ( offset ';' )? ( limit ';' )?                     ;
 
