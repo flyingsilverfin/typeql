@@ -123,6 +123,7 @@ public class TypeQLSteps {
     @Given("for each session, transaction commits")
     public void do_nothing() { }
 
+    @Given("set time-zone is: {}")
     @Given("rules contain: {}")
     @Given("answer size is: {}")
     @Given("each answer satisfies")

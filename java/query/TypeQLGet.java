@@ -268,6 +268,11 @@ public class TypeQLGet implements TypeQLQuery, Aggregatable<TypeQLGet.Aggregate>
         }
 
         @Override
+        public String toString() {
+            return toString(true);
+        }
+
+        @Override
         public final String toString(boolean pretty) {
             StringBuilder query = new StringBuilder();
             query.append(get().toString(pretty));
@@ -316,7 +321,7 @@ public class TypeQLGet implements TypeQLQuery, Aggregatable<TypeQLGet.Aggregate>
             return TypeQLArg.QueryType.READ;
         }
 
-        public TypeQLGet match() {
+        public TypeQLGet get() {
             return query;
         }
 
@@ -330,9 +335,14 @@ public class TypeQLGet implements TypeQLQuery, Aggregatable<TypeQLGet.Aggregate>
         }
 
         @Override
+        public String toString() {
+            return toString(true);
+        }
+
+        @Override
         public String toString(boolean pretty) {
-            if (pretty) return match().toString(pretty) + NEW_LINE + GROUP + SPACE + var + SEMICOLON;
-            else return match().toString(pretty) + GROUP + SPACE + var + SEMICOLON;
+            if (pretty) return get().toString(pretty) + NEW_LINE + GROUP + SPACE + var + SEMICOLON;
+            else return get().toString(pretty) + GROUP + SPACE + var + SEMICOLON;
         }
 
         @Override
@@ -391,9 +401,14 @@ public class TypeQLGet implements TypeQLQuery, Aggregatable<TypeQLGet.Aggregate>
             }
 
             @Override
+            public String toString() {
+                return toString(true);
+            }
+
+            @Override
             public final String toString(boolean pretty) {
                 StringBuilder query = new StringBuilder();
-                query.append(group().match().toString(pretty));
+                query.append(group().get().toString(pretty));
                 if (pretty) query.append(NEW_LINE);
                 query.append(GROUP).append(SPACE).append(group().var().toString(pretty))
                         .append(SEMICOLON).append(SPACE).append(method);

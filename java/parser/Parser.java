@@ -89,6 +89,7 @@ import static com.vaticle.typeql.lang.common.exception.ErrorMessage.ILLEGAL_GRAM
 import static com.vaticle.typeql.lang.common.exception.ErrorMessage.ILLEGAL_STATE;
 import static com.vaticle.typeql.lang.common.util.Strings.unescapeRegex;
 import static com.vaticle.typeql.lang.pattern.variable.UnboundConceptVariable.hidden;
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static org.antlr.v4.runtime.atn.PredictionMode.LL_EXACT_AMBIG_DETECTION;
 import static org.antlr.v4.runtime.atn.PredictionMode.SLL;
@@ -344,7 +345,9 @@ public class Parser extends TypeQLBaseVisitor {
     @Override
     public TypeQLGet visitQuery_get(TypeQLParser.Query_getContext ctx) {
         MatchClause match = visitClause_match(ctx.clause_match());
-        List<UnboundVariable> filter = visitClause_get(ctx.clause_get());
+        List<UnboundVariable> filter;
+        if (ctx.clause_get() != null) filter = visitClause_get(ctx.clause_get());
+        else filter = emptyList();
         Modifiers modifiers;
         if (ctx.modifiers() != null) {
             Sortable.Sorting sorting = null;
@@ -373,7 +376,7 @@ public class Parser extends TypeQLBaseVisitor {
                     variables.add(getVarConcept(terminal));
                 } else if (terminal.getSymbol().getType() == TypeQLParser.VAR_VALUE_) {
                     variables.add(getVarValue(terminal));
-                } else throw TypeQLException.of(ILLEGAL_GRAMMAR.message(terminal));
+                }
             } else throw TypeQLException.of(ILLEGAL_GRAMMAR.message(child));
         }
         return variables;
