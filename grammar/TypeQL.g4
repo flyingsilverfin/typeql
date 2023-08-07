@@ -60,7 +60,7 @@ clause_insert         :   INSERT      variable_things     ;
 clause_delete         :   DELETE      variable_things     ;
 clause_get            :   GET       ( VAR_CONCEPT_ | VAR_VALUE_ )?   ( ',' ( VAR_CONCEPT_ | VAR_VALUE_ ) )*  ';' ;
 clause_group          :   GROUP     ( VAR_CONCEPT_ | VAR_VALUE_ ) ';'            ;
-clause_fetch          :   FETCH       fetch_entry    ;
+clause_fetch          :   FETCH       fetch_entries    ;
 clause_aggregate      :   aggregate_method  ( VAR_CONCEPT_  | VAR_VALUE_ )?  ';' ;  // method and, optionally, a variable
 aggregate_method      :   COUNT   |   MAX     |   MEAN    |   MEDIAN                 // calculate statistical values
                       |   MIN     |   STD     |   SUM     ;
@@ -92,15 +92,19 @@ limit                 :   LIMIT       LONG_                                     
 //fetch_as              :   AS  fetch_label ;
 //fetch_label           :   QUOTED_STRING | LABEL_  ;
 
-fetch_entries        : ( fetch_entry ';' )+      ;
-fetch_entry          :   fetch_name_var
-                     |   fetch_name_var ':' fetch_attrs
-                     |   fetch_name     ':' '{' fetch_subquery  '}'  ;
+fetch_entries        : '{' fetch_entry ( ',' fetch_entry  )*   '}'   ;
+fetch_entry          :   fetch_entry_var
+                     |   fetch_entry_subentries
+                     |   fetch_entry_subquery    ;
 
-fetch_attrs          :   fetch_attr  ( ',' fetch_attr )*  ;
-fetch_attr           :   label  ( fetch_as_name )?         ;
+fetch_entry_var      :    fetch_name_var ;
+fetch_entry_subentries : fetch_name_var ':' '{' fetch_subentries '}' ;
+fetch_entry_subquery :   fetch_name     ':' '[' ( query_fetch | query_get_aggregate )  ']'  ;
 
-fetch_subquery       : ( query_fetch | query_get_aggregate )  ;
+fetch_subentries     :   fetch_subentry  ( ',' fetch_subentry )*  ;
+fetch_subentry       :   fetch_subentry_attr
+                     |   fetch_entry_subquery  ;
+fetch_subentry_attr  :   label ( fetch_as_name )?  ;
 
 fetch_name_var       : ( VAR_CONCEPT_ | VAR_VALUE_ ) ( fetch_as_name )? ;
 fetch_as_name        :   AS  fetch_name ;
