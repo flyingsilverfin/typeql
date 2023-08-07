@@ -135,6 +135,14 @@ public interface TypeQLQuery {
         }
     }
 
+    default TypeQLFetch asFetch() {
+        if (this instanceof TypeQLFetch) {
+            return (TypeQLFetch) this;
+        } else {
+            throw TypeQLException.of(INVALID_CASTING.message(className(this.getClass()), className(TypeQLFetch.class)));
+        }
+    }
+
     static void appendClause(StringBuilder builder, TypeQLToken.Command command, Stream<String> elements, boolean pretty) {
         builder.append(command).append(NEW_LINE);
         if (pretty) builder.append(elements.collect(SEMICOLON_NEW_LINE.joiner()));

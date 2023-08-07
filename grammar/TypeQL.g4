@@ -53,14 +53,14 @@ query_get_group_agg   :   query_get_group clause_aggregate                 ;
 
 query_fetch           :   clause_match  clause_fetch  modifiers                    ;
 
-clause_define         :   DEFINE      definables        ;
-clause_undefine       :   UNDEFINE    definables        ;
-clause_match          :   MATCH       patterns          ;
-clause_insert         :   INSERT      variable_things   ;
-clause_delete         :   DELETE      variable_things   ;
+clause_define         :   DEFINE      definables          ;
+clause_undefine       :   UNDEFINE    definables          ;
+clause_match          :   MATCH       patterns            ;
+clause_insert         :   INSERT      variable_things     ;
+clause_delete         :   DELETE      variable_things     ;
 clause_get            :   GET       ( VAR_CONCEPT_ | VAR_VALUE_ )?   ( ',' ( VAR_CONCEPT_ | VAR_VALUE_ ) )*  ';' ;
 clause_group          :   GROUP     ( VAR_CONCEPT_ | VAR_VALUE_ ) ';'            ;
-clause_fetch          :   FETCH       fetchables        ;
+clause_fetch          :   FETCH       fetch_entry    ;
 clause_aggregate      :   aggregate_method  ( VAR_CONCEPT_  | VAR_VALUE_ )?  ';' ;  // method and, optionally, a variable
 aggregate_method      :   COUNT   |   MAX     |   MEAN    |   MEDIAN                 // calculate statistical values
                       |   MIN     |   STD     |   SUM     ;
@@ -77,20 +77,34 @@ limit                 :   LIMIT       LONG_                                     
 
 // FETCH QUERY =================================================================
 
-fetchables            : ( fetchable ';' )+      ;
-fetchable             :   fetch_variable
-                      |   fetch_into_attributes
-                      |   fetch_subquery        ;
+//fetch_operations      : ( fetch_operation ';' )+      ;
+//fetch_operation       :   fetch_operation_var
+//                      |   fetch_operation_var_attrs
+//                      |   fetch_operation_subquery    ;
+//
+//fetch_operation_var_attrs  :   fetch_operation_var  ':' fetch_operation_attrs ;
+//fetch_operation_attrs      :   fetch_operation_attr  ( ',' fetch_operation_attr )*  ;
+//fetch_operation_attr       :   label  ( fetch_as )?         ;
+//
+//fetch_operation_subquery   :   fetch_label ':' '{' ( query_fetch | query_get_aggregate )  '}'  ;
+//
+//fetch_operation_var   : ( VAR_CONCEPT_ | VAR_VALUE_ ) ( fetch_as )? ;
+//fetch_as              :   AS  fetch_label ;
+//fetch_label           :   QUOTED_STRING | LABEL_  ;
 
-fetch_into_attributes :   fetch_variable  ':' fetch_variable_attrs ;
-fetch_variable_attrs  :   fetch_variable_attr  ( ',' fetch_variable_attr )*  ;
-fetch_variable_attr   :   label  ( fetch_as )?         ;
+fetch_entries        : ( fetch_entry ';' )+      ;
+fetch_entry          :   fetch_name_var
+                     |   fetch_name_var ':' fetch_attrs
+                     |   fetch_name     ':' '{' fetch_subquery  '}'  ;
 
-fetch_subquery        :   fetch_name ':' '{' ( query_fetch | query_get_aggregate )  '}'  ;
+fetch_attrs          :   fetch_attr  ( ',' fetch_attr )*  ;
+fetch_attr           :   label  ( fetch_as_name )?         ;
 
-fetch_variable        : ( VAR_CONCEPT_ | VAR_VALUE_ ) ( fetch_as )? ;
-fetch_as              :   AS  fetch_name ;
-fetch_name            :   QUOTED_STRING | LABEL_  ;
+fetch_subquery       : ( query_fetch | query_get_aggregate )  ;
+
+fetch_name_var       : ( VAR_CONCEPT_ | VAR_VALUE_ ) ( fetch_as_name )? ;
+fetch_as_name        :   AS  fetch_name ;
+fetch_name           :   QUOTED_STRING | LABEL_  ;
 
 // SCHEMA QUERY ================================================================
 
