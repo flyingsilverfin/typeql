@@ -10,6 +10,7 @@
 #![deny(elided_lifetimes_in_paths)]
 #![deny(unused_must_use)]
 #![allow(edition_2024_expr_fragment_specifier)]
+#![allow(tail_expr_drop_order)]
 
 use std::{collections::HashSet, sync::OnceLock};
 
